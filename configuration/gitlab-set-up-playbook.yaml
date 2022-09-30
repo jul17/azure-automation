@@ -4,7 +4,6 @@
   vars_files:
     - vars.yml
   tasks:
-    
     - name: Update Repository cache
       ansible.builtin.apt:
        update_cache: true
@@ -49,7 +48,6 @@
           gitlabtest
           PASS
       register: password
-    
 
     - name: Wait for Gitlab to start up before proceeding.
       uri:
