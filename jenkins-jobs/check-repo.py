@@ -44,11 +44,13 @@ def get_jenkins_files_info(base_url, token, minutes):
         repo_id = repo['id']
         repo_details_url = base_url + str(repo_id) +"/repository/tree?recursive=true"
         repo_info = get_info(repo_details_url, token)
-
+        print (repo_info)
         file_list = []
 
         for info in repo_info:
-            if "path" in repo_info:
+            if "path" in info:
+                print("-----------------")
+                print (repo_info)
                 if "Jenkinsfile" in info["path"]:
                     file_list.append(info["path"])
                 repo['files'] = file_list
