@@ -18,17 +18,7 @@ output "jenkins_ssh_user" {
   value = azurerm_linux_virtual_machine.jenkins_vm.admin_username
 }
 
-output "jenkins_ssh_pass" {
-  sensitive = true
-  value = azurerm_linux_virtual_machine.jenkins_vm.admin_password
-}
-
 output "scm_ssh_user" {
   value = azurerm_linux_virtual_machine.scm_vm.admin_username
-}
-
-output "scm_ssh_pass" {
-  sensitive = true
-  value = azurerm_linux_virtual_machine.scm_vm.admin_password
 }
 
