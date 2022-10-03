@@ -32,4 +32,5 @@ override.tf.json
 commands
 jenkins*.json
 jenkins*.zip
+**/demo/*
 

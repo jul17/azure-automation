@@ -24,3 +24,32 @@
 
 - Another demo that shows Jenkins pipeline and creation of new job after new repository created.
 
+
+
+### How to manage?
+Use `manage.sh`
+```
+./manage.sh -h
+manage.sh [-v] [-q] [-h] [-i] [-j] [-g] [-d] - script that manage creating and configuring infra for Jenkkins and Gitlab
+Where:
+    -i  Manage infra creating or destroying
+    example:
+        manage.sh -i create
+        manage.sh -i destroy
+    -j  Configure jenkins
+    -g  Configure gitlab
+    -d Configure demo
+    -h  show this help message
+    -q  quiet mode, doesnt print any info/error messages
+    example:
+        manage.sh -jgd
+```
+To create/destroy infra
+```
+cd infra
+../manage.sh -i create
+```
+To configure Jenkins/Gitlab(in project root dir)
+```
+./manage.sh -jg
+```
