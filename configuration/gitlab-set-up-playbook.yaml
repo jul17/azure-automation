@@ -2,7 +2,7 @@
   hosts: gitlab
   become: true
   vars_files:
-    - vars.yml
+    vars.yaml
   tasks:
     - name: Update Repository cache
       ansible.builtin.apt:
@@ -10,9 +10,9 @@
        cache_valid_time: 86400
        pkg:
         - curl
-        - openssh-server 
-        - ca-certificates 
-        - tzdata 
+        - openssh-server
+        - ca-certificates
+        - tzdata
         - perl
 
     - name: Gather the package facts
@@ -22,7 +22,7 @@
     - name: Check if packages installed
       ansible.builtin.debug:
         msg: "All needed packeges are installed!"
-      when: 
+      when:
         - "'curl' in ansible_facts.packages"
         - "'openssh-server' in ansible_facts.packages"
         - "'ca-certificates' in ansible_facts.packages"
@@ -33,10 +33,10 @@
       ansible.builtin.shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | sudo bash
 
     - name: Install gitlab
-      ansible.builtin.shell: EXTERNAL_URL="http://{{ scm-private-ip }}" apt-get install gitlab-ee
+      ansible.builtin.shell: EXTERNAL_URL="http://{{ scm_dns }}" apt-get install gitlab-ee
       register: install_out
 
-    - name: Debug install process    
+    - name: Debug install process
       ansible.builtin.debug:
         var: install_out
       failed_when: install_out.rc != 0
@@ -51,7 +51,7 @@
 
     - name: Wait for Gitlab to start up before proceeding.
       uri:
-        url: "http://{{ scm-private-ip }}"
+        url: "http://localhost"
         method: GET
         return_content: "yes"
         timeout: 5

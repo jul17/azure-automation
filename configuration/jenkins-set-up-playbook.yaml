@@ -1,12 +1,10 @@
 - name: Install and Configure Jenkins
   hosts: jenkins
   become: true
-  vars:
-    jenkins_container_name: jenkins
-    jenkins_container_image: julity/custom-jenkins:2.319.3-lts-py
+  vars_files:
+    vars.yaml
   tasks:
     - name: Install Docker
-      become: true
       ansible.builtin.apt:
        update_cache: true
        cache_valid_time: 86400
@@ -22,7 +20,7 @@
     - name: Create a volume
       docker_volume:
         name: jenkins-vol
-  
+
     - name: Create a data container
       community.docker.docker_container:
         name: "{{ jenkins_container_name }}"
@@ -31,15 +29,18 @@
         pull: yes
         restart_policy: on-failure
         env:
-          HOST_IP: "{{ ansible_ssh_host }}"
+          HOST_IP: "{{ jenkins_dns }}"
         volumes:
           - jenkins-vol:/var/jenkins_home
       register: container
+      tags:
+        - container
 
     - name: debug container
       ansible.builtin.debug:
         var: container
-
+      tags:
+        - container
     - name: Wait for Jenkins to start up before proceeding.
       uri:
         url: "http://localhost:8080"
@@ -55,7 +56,11 @@
       delay: 5
       changed_when: false
       check_mode: false
+      tags:
+        - container
 
     - name: debug
       ansible.builtin.debug:
         var: result
+      tags:
+        - container
