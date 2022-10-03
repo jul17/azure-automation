@@ -1,0 +1,61 @@
+- name: Install and Configure Jenkins
+  hosts: jenkins
+  become: true
+  vars:
+    jenkins_container_name: jenkins
+    jenkins_container_image: julity/custom-jenkins:2.319.3-lts-py
+  tasks:
+    - name: Install Docker
+      become: true
+      ansible.builtin.apt:
+       update_cache: true
+       cache_valid_time: 86400
+       pkg:
+        - docker.io
+        - python3-pip
+       state: latest
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Create a volume
+      docker_volume:
+        name: jenkins-vol
+  
+    - name: Create a data container
+      community.docker.docker_container:
+        name: "{{ jenkins_container_name }}"
+        image: "{{ jenkins_container_image }}"
+        published_ports: "8080:8080"
+        pull: yes
+        restart_policy: on-failure
+        env:
+          HOST_IP: "{{ ansible_ssh_host }}"
+        volumes:
+          - jenkins-vol:/var/jenkins_home
+      register: container
+
+    - name: debug container
+      ansible.builtin.debug:
+        var: container
+
+    - name: Wait for Jenkins to start up before proceeding.
+      uri:
+        url: "http://localhost:8080"
+        method: GET
+        return_content: "yes"
+        timeout: 5
+        body_format: raw
+        follow_redirects: "no"
+        status_code: 200,403
+      register: result
+      until: (result.status == 403 or result.status == 200) and (result.content.find("Please wait while") == -1)
+      retries: 60
+      delay: 5
+      changed_when: false
+      check_mode: false
+
+    - name: debug
+      ansible.builtin.debug:
+        var: result

@@ -1,0 +1,66 @@
+- name: Install and configure Gitlab
+  hosts: gitlab
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Update Repository cache
+      ansible.builtin.apt:
+       update_cache: true
+       cache_valid_time: 86400
+       pkg:
+        - curl
+        - openssh-server 
+        - ca-certificates 
+        - tzdata 
+        - perl
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Check if packages installed
+      ansible.builtin.debug:
+        msg: "All needed packeges are installed!"
+      when: 
+        - "'curl' in ansible_facts.packages"
+        - "'openssh-server' in ansible_facts.packages"
+        - "'ca-certificates' in ansible_facts.packages"
+        - "'tzdata' in ansible_facts.packages"
+        - "'perl' in ansible_facts.packages"
+
+    - name: Add the GitLab package repository
+      ansible.builtin.shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | sudo bash
+
+    - name: Install gitlab
+      ansible.builtin.shell: EXTERNAL_URL="http://{{ scm-private-ip }}" apt-get install gitlab-ee
+      register: install_out
+
+    - name: Debug install process    
+      ansible.builtin.debug:
+        var: install_out
+      failed_when: install_out.rc != 0
+
+    - name: Change root password
+      ansible.builtin.shell: |
+          gitlab-rake "gitlab:password:reset[root]" << PASS
+          gitlabtest
+          gitlabtest
+          PASS
+      register: password
+
+    - name: Wait for Gitlab to start up before proceeding.
+      uri:
+        url: "http://{{ scm-private-ip }}"
+        method: GET
+        return_content: "yes"
+        timeout: 5
+        body_format: raw
+        follow_redirects: "yes"
+        status_code: 200,403
+      register: result
+      until: result.status == 403 or result.status == 200
+      retries: 60
+      delay: 5
+      changed_when: false
+      check_mode: false
