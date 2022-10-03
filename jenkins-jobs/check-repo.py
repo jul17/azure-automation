@@ -26,13 +26,13 @@ def get_latest_repo(base_url, token, minutes):
     for item in data:
         id = item['id']
         http_url_to_repo = item['http_url_to_repo']
-        
+
         time = convert_date(item['created_at'])
         latest_repo = get_time_difference(time)
         latest_repo_dict = {
             "id": id,
             "http_url_to_repo": http_url_to_repo
-        } 
+        }
         if latest_repo <= minutes:
             latest_repo_list.append(latest_repo_dict)
     return latest_repo_list
@@ -46,12 +46,14 @@ def get_jenkins_files_info(base_url, token, minutes):
         repo_info = get_info(repo_details_url, token)
 
         file_list = []
+
         for info in repo_info:
-            if "Jenkinsfile" in info["path"]:
-                file_list.append(info["path"])
-            repo['files'] = file_list
-        if not "Jenkinsfile" in repo['files']:
-            latest_repo_list.remove(repo)
+            if "path" in repo_info:
+                if "Jenkinsfile" in info["path"]:
+                    file_list.append(info["path"])
+                repo['files'] = file_list
+                save_to_json(latest_repo_list)
+
 
     return latest_repo_list
 
@@ -76,7 +78,7 @@ def main():
     base_url = "http://{}/api/v4/projects/".format(server_ip)
 
     data = get_jenkins_files_info(base_url, token, time)
-    save_to_json(data)
+    # save_to_json(data)
 
 
 if __name__ == '__main__':
