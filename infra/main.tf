@@ -199,3 +199,30 @@ resource "azurerm_linux_virtual_machine" "scm_vm" {
   disable_password_authentication = false
   admin_password = "Vmadmin789&*("
 }
+
+module "ansible_var_template" {
+  source = "./modules/ansible-template"
+
+    jenkins_ip_var = azurerm_linux_virtual_machine.jenkins_vm.public_ip_address
+    jenkins_user_var = azurerm_linux_virtual_machine.jenkins_vm.admin_username
+    jenkins_pass_var = azurerm_linux_virtual_machine.jenkins_vm.admin_password
+
+    gitlab_ip_var = azurerm_linux_virtual_machine.scm_vm.public_ip_address
+    gitlab_user_var = azurerm_linux_virtual_machine.scm_vm.admin_username
+    gitlab_pass_var = azurerm_linux_virtual_machine.scm_vm.admin_password
+
+    jenkins_dns_var = "${azurerm_public_ip.jenkins_public_ip.domain_name_label}.${azurerm_resource_group.rg.location}.cloudapp.azure.com"
+    gitlab_dns_var = "${azurerm_public_ip.scm_public_ip.domain_name_label}.${azurerm_resource_group.rg.location}.cloudapp.azure.com"
+
+  depends_on = [
+    azurerm_linux_virtual_machine.scm_vm
+  ]
+}
+
+module "run_ansible" {
+  source = "./modules/run-ansible"
+
+  depends_on = [
+    azurerm_linux_virtual_machine.scm_vm
+  ]
+}

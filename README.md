@@ -26,7 +26,7 @@
 
 
 
-### How to manage?
+### How to manage? [DEPRECATED]
 Use `manage.sh`
 ```
 ./manage.sh -h
@@ -53,3 +53,10 @@ To configure Jenkins/Gitlab(in project root dir)
 ```
 ./manage.sh -jg
 ```
+
+
+TODO
+
+1. How to run ansible with terraform
+2. data in terraform
+3. ansible play options - what des that mean?
